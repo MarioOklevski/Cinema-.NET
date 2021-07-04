@@ -50,6 +50,20 @@ namespace Cinema.Web.Data
                 .HasOne<CinemaAppUser>(z => z.Owner)
                 .WithOne(z => z.UserCart)
                 .HasForeignKey<ShoppingCart>(z => z.OwnerId);
+
+
+            builder.Entity<MovieInOrder>()
+                .HasKey(z => new { z.MovieId, z.OrderId });
+
+            builder.Entity<MovieInOrder>()
+               .HasOne(z => z.SelectedMovie)
+               .WithMany(z => z.Orders)
+               .HasForeignKey(z => z.MovieId);
+
+            builder.Entity<MovieInOrder>()
+                .HasOne(z => z.UserOrder)
+                .WithMany(z => z.Movies)
+                .HasForeignKey(z => z.OrderId);
         }
     }
 }

@@ -20,5 +20,6 @@ namespace Cinema.Web.Models.Domain
         [Required]
         public int Rating { get; set; }
         public virtual ICollection<MovieInShoppingCart> MovieInShoppingCarts { get; set; }
+        public virtual ICollection<MovieInOrder> Orders { get; set; }
     }
 }

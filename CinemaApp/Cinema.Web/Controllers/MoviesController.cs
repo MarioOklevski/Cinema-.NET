@@ -9,12 +9,15 @@ using Cinema.Web.Data;
 using Cinema.Web.Models.Domain;
 using Cinema.Web.Models.DTO;
 using System.Security.Claims;
+using Cinema.Web.Models.Identity;
+using Microsoft.AspNetCore.Identity;
 
 namespace Cinema.Web.Controllers
 {
     public class MoviesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<CinemaAppUser> _userManager;
 
         public MoviesController(ApplicationDbContext context)
         {
