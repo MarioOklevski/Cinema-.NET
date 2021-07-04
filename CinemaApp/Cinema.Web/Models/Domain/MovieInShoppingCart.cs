@@ -11,5 +11,7 @@ namespace Cinema.Web.Models.Domain
         public Guid ShoppingCartId { get; set; }
         public Movie Movie { get; set; }
         public ShoppingCart ShoppingCart { get; set; }
+
+        public int Quantity { get; set; }
     }
 }
