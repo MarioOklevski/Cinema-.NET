@@ -1,0 +1,30 @@
+﻿@model Cinema.Web.Models.DTO.AddToShoppingCartDto
+@{ 
+    ViewData["Title"] = "Add to Shopping Cart";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div>Add new product with quantity</div>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-4 m-auto">
+        <form asp-action="AddMovieToCart" method="post">
+            <input type="hidden" asp-for="MovieId" />
+            <div class="form-group">
+                <label asp-for="SelectedMovie.MovieName"></label>
+                <input class="form-control" disabled asp-for="SelectedMovie.MovieName" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Quantity"></label>
+                <input class="form-control" asp-for="Quantity" />
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary"/>
+            </div>
+        </form>
+    </div>
+</div>

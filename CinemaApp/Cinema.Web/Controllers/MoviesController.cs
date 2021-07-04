@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Cinema.Web.Data;
 using Cinema.Web.Models.Domain;
+using Cinema.Web.Models.DTO;
+using System.Security.Claims;
 
 namespace Cinema.Web.Controllers
 {
@@ -23,6 +25,50 @@ namespace Cinema.Web.Controllers
         public async Task<IActionResult> Index()
         {
             return View(await _context.Movies.ToListAsync());
+        }
+
+        public async Task<IActionResult> AddMovieToCart(Guid? id)
+        {
+            var movie = await _context.Movies.Where(z => z.Id.Equals(id)).FirstOrDefaultAsync();
+            AddToShoppingCartDto model = new AddToShoppingCartDto
+            {
+                SelectedMovie = movie,
+                MovieId = movie.Id,
+                Quantity = 1
+            };
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddMovieToCart([Bind("MovieId", "Quantity")] AddToShoppingCartDto item)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var userShoppingCart = await _context.ShoppingCarts.Where(z => z.OwnerId.Equals(userId)).FirstOrDefaultAsync();
+
+            if(item.MovieId != null && userShoppingCart != null)
+            {
+                var movie = await _context.Movies.Where(z => z.Id.Equals(item.MovieId)).FirstOrDefaultAsync();
+
+                if(movie != null)
+                {
+                    MovieInShoppingCart itemToAdd = new MovieInShoppingCart
+                    {
+                        Movie = movie,
+                        MovieId = movie.Id,
+                        ShoppingCart = userShoppingCart,
+                        ShoppingCartId = userShoppingCart.Id,
+                        Quantity = item.Quantity
+                    };
+
+                    _context.Add(itemToAdd);
+                    await _context.SaveChangesAsync();
+                }
+                return RedirectToAction("Index", "Movies");
+            }
+
+            return View(item);
         }
 
         // GET: Movies/Details/5
