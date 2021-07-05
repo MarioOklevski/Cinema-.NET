@@ -1,7 +1,7 @@
-﻿using Cinema.Web.Data;
-using Cinema.Web.Models.Domain;
-using Cinema.Web.Models.DTO;
-using Cinema.Web.Models.Identity;
+﻿using Cinema.Domain.DomainModels.Domain;
+using Cinema.Domain.DTO;
+using Cinema.Domain.Identity;
+using Cinema.Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

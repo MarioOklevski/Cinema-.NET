@@ -1,73 +1,47 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Cinema.Domain.DomainModels.Domain;
+using Cinema.Domain.DTO;
+using Cinema.Services.Interface;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Cinema.Web.Data;
-using Cinema.Web.Models.Domain;
-using Cinema.Web.Models.DTO;
+using System;
 using System.Security.Claims;
-using Cinema.Web.Models.Identity;
-using Microsoft.AspNetCore.Identity;
 
 namespace Cinema.Web.Controllers
 {
     public class MoviesController : Controller
     {
-        private readonly ApplicationDbContext _context;
-        private readonly UserManager<CinemaAppUser> _userManager;
+        private readonly IMovieService _movieService;
+        //private readonly UserManager<CinemaAppUser> _userManager;
 
-        public MoviesController(ApplicationDbContext context)
+        public MoviesController(IMovieService _movieService)
         {
-            _context = context;
+            this._movieService = _movieService;
         }
 
         // GET: Movies
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            return View(await _context.Movies.ToListAsync());
+            var allMovies = this._movieService.GetAllMovies();
+            return View(allMovies);
         }
 
-        public async Task<IActionResult> AddMovieToCart(Guid? id)
+        public IActionResult AddMovieToCart(Guid? id)
         {
-            var movie = await _context.Movies.Where(z => z.Id.Equals(id)).FirstOrDefaultAsync();
-            AddToShoppingCartDto model = new AddToShoppingCartDto
-            {
-                SelectedMovie = movie,
-                MovieId = movie.Id,
-                Quantity = 1
-            };
+            var model = this._movieService.GetShoppingCartInfo(id);
             return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddMovieToCart([Bind("MovieId", "Quantity")] AddToShoppingCartDto item)
+        public IActionResult AddMovieToCart([Bind("MovieId", "Quantity")] AddToShoppingCartDto item)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var userShoppingCart = await _context.ShoppingCarts.Where(z => z.OwnerId.Equals(userId)).FirstOrDefaultAsync();
+            var result = this._movieService.AddToShoppingCart(item, userId);
 
-            if(item.MovieId != null && userShoppingCart != null)
+
+            if (result)
             {
-                var movie = await _context.Movies.Where(z => z.Id.Equals(item.MovieId)).FirstOrDefaultAsync();
-
-                if(movie != null)
-                {
-                    MovieInShoppingCart itemToAdd = new MovieInShoppingCart
-                    {
-                        Movie = movie,
-                        MovieId = movie.Id,
-                        ShoppingCart = userShoppingCart,
-                        ShoppingCartId = userShoppingCart.Id,
-                        Quantity = item.Quantity
-                    };
-
-                    _context.Add(itemToAdd);
-                    await _context.SaveChangesAsync();
-                }
                 return RedirectToAction("Index", "Movies");
             }
 
@@ -75,15 +49,14 @@ namespace Cinema.Web.Controllers
         }
 
         // GET: Movies/Details/5
-        public async Task<IActionResult> Details(Guid? id)
+        public IActionResult Details(Guid? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var movie = await _context.Movies
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var movie = this._movieService.GetDetailsForMovie(id);
             if (movie == null)
             {
                 return NotFound();
@@ -103,27 +76,25 @@ namespace Cinema.Web.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,MovieName,MovieImage,MovieDescriprtion,MoviePrice,Rating")] Movie movie)
+        public IActionResult Create([Bind("Id,MovieName,MovieImage,MovieDescriprtion,MoviePrice,Rating")] Movie movie)
         {
             if (ModelState.IsValid)
             {
-                movie.Id = Guid.NewGuid();
-                _context.Add(movie);
-                await _context.SaveChangesAsync();
+                this._movieService.CreateNewMovie(movie);
                 return RedirectToAction(nameof(Index));
             }
             return View(movie);
         }
 
         // GET: Movies/Edit/5
-        public async Task<IActionResult> Edit(Guid? id)
+        public IActionResult Edit(Guid? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var movie = await _context.Movies.FindAsync(id);
+            var movie = this._movieService.GetDetailsForMovie(id);
             if (movie == null)
             {
                 return NotFound();
@@ -136,7 +107,7 @@ namespace Cinema.Web.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,MovieName,MovieImage,MovieDescriprtion,MoviePrice,Rating")] Movie movie)
+        public IActionResult Edit(Guid id, [Bind("Id,MovieName,MovieImage,MovieDescriprtion,MoviePrice,Rating")] Movie movie)
         {
             if (id != movie.Id)
             {
@@ -147,8 +118,7 @@ namespace Cinema.Web.Controllers
             {
                 try
                 {
-                    _context.Update(movie);
-                    await _context.SaveChangesAsync();
+                    this._movieService.UpdateExistingMovie(movie);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -167,15 +137,15 @@ namespace Cinema.Web.Controllers
         }
 
         // GET: Movies/Delete/5
-        public async Task<IActionResult> Delete(Guid? id)
+        public IActionResult Delete(Guid? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var movie = await _context.Movies
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var movie = this._movieService.GetDetailsForMovie(id);
+
             if (movie == null)
             {
                 return NotFound();
@@ -187,17 +157,15 @@ namespace Cinema.Web.Controllers
         // POST: Movies/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        public IActionResult DeleteConfirmed(Guid id)
         {
-            var movie = await _context.Movies.FindAsync(id);
-            _context.Movies.Remove(movie);
-            await _context.SaveChangesAsync();
+            this._movieService.DeleteMovie(id);
             return RedirectToAction(nameof(Index));
         }
 
         private bool MovieExists(Guid id)
         {
-            return _context.Movies.Any(e => e.Id == id);
+            return this._movieService.GetDetailsForMovie(id) != null;
         }
     }
 }

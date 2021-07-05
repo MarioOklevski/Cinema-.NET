@@ -1,18 +1,15 @@
-using Cinema.Web.Data;
-using Cinema.Web.Models.Identity;
+using Cinema.Domain.Identity;
+using Cinema.Repository;
+using Cinema.Repository.Implementation;
+using Cinema.Repository.Interface;
+using Cinema.Services.Implementation;
+using Cinema.Services.Interface;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Cinema.Web
 {
@@ -33,6 +30,12 @@ namespace Cinema.Web
                     Configuration.GetConnectionString("DefaultConnection")));
             services.AddDefaultIdentity<CinemaAppUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
+
+            services.AddTransient<IMovieService, MovieService>();
+
             services.AddControllersWithViews();
             services.AddRazorPages();
         }
