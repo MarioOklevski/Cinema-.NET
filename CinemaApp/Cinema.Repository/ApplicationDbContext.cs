@@ -29,8 +29,8 @@ namespace Cinema.Repository
                 .ValueGeneratedOnAdd();
 
             //ManyToMany relation
-            builder.Entity<MovieInShoppingCart>()
-                .HasKey(z => new { z.MovieId, z.ShoppingCartId });
+            /*builder.Entity<MovieInShoppingCart>()
+                .HasKey(z => new { z.MovieId, z.ShoppingCartId });*/
 
             builder.Entity<MovieInShoppingCart>()
                 .HasOne(z => z.Movie)
@@ -49,8 +49,8 @@ namespace Cinema.Repository
                 .HasForeignKey<ShoppingCart>(z => z.OwnerId);
 
 
-            builder.Entity<MovieInOrder>()
-                .HasKey(z => new { z.MovieId, z.OrderId });
+            /*builder.Entity<MovieInOrder>()
+                .HasKey(z => new { z.MovieId, z.OrderId });*/
 
             builder.Entity<MovieInOrder>()
                .HasOne(z => z.SelectedMovie)

@@ -50,37 +50,48 @@ namespace Cinema.Repository.Migrations
 
             modelBuilder.Entity("Cinema.Domain.DomainModels.Domain.MovieInOrder", b =>
                 {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("MovieId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("Id")
+                    b.Property<Guid?>("OrderedMovieId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("MovieId", "OrderId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("MovieId");
 
                     b.HasIndex("OrderId");
+
+                    b.HasIndex("OrderedMovieId");
 
                     b.ToTable("MovieInOrder");
                 });
 
             modelBuilder.Entity("Cinema.Domain.DomainModels.Domain.MovieInShoppingCart", b =>
                 {
-                    b.Property<Guid>("MovieId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ShoppingCartId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("MovieId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.HasKey("MovieId", "ShoppingCartId");
+                    b.Property<Guid>("ShoppingCartId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MovieId");
 
                     b.HasIndex("ShoppingCartId");
 
@@ -343,6 +354,10 @@ namespace Cinema.Repository.Migrations
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Cinema.Domain.DomainModels.Domain.Movie", "OrderedMovie")
+                        .WithMany()
+                        .HasForeignKey("OrderedMovieId");
                 });
 
             modelBuilder.Entity("Cinema.Domain.DomainModels.Domain.MovieInShoppingCart", b =>

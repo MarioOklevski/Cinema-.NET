@@ -2,6 +2,7 @@
 using Cinema.Domain.DTO;
 using Cinema.Repository.Interface;
 using Cinema.Services.Interface;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,12 +14,13 @@ namespace Cinema.Services.Implementation
         private readonly IRepository<Movie> _movieRepository;
         private readonly IRepository<MovieInShoppingCart> _movieInShoppingCartRepository;
         private readonly IUserRepository _userRepository;
-
-        public MovieService(IRepository<Movie> _movieRepository, IUserRepository _userRepository, IRepository<MovieInShoppingCart> _movieInShoppingCartRepository)
+        private readonly ILogger<MovieService> _logger;
+        public MovieService(ILogger<MovieService> _logger, IRepository<Movie> _movieRepository, IUserRepository _userRepository, IRepository<MovieInShoppingCart> _movieInShoppingCartRepository)
         {
             this._movieRepository = _movieRepository;
             this._userRepository = _userRepository;
             this._movieInShoppingCartRepository = _movieInShoppingCartRepository;
+            this._logger = _logger;
         }
 
         public bool AddToShoppingCart(AddToShoppingCartDto item, string userID)
@@ -43,10 +45,12 @@ namespace Cinema.Services.Implementation
                     };
 
                     this._movieInShoppingCartRepository.Insert(itemToAdd);
+                    _logger.LogInformation("Movie was successfully added into ShoppingCart.");
                     return true;
                 }
                 return false;
             }
+            _logger.LogInformation("Something was wrong. MovieId or UserSHoppingCart may be unavailable");
             return false;
         }
 
@@ -63,6 +67,7 @@ namespace Cinema.Services.Implementation
 
         public List<Movie> GetAllMovies()
         {
+            _logger.LogInformation("GetAllMovies was called!");
             return this._movieRepository.GetAll().ToList();
         }
 
